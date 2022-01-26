@@ -36,7 +36,7 @@ public class PhotoRepositoryTests {
     @Test
     void findByAlbumId_givenAlbumId_ShouldShowAlbum(){
         Album album = new Album();
-        album.setTitle("Título");
+        album.setTitle("Portadas de Discos de Michael Jackson");
         album.setCreatedAt(Instant.now());
         album.setUpdatedAt(Instant.now());
 
