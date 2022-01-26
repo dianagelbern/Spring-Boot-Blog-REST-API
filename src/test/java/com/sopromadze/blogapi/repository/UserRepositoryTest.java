@@ -22,6 +22,11 @@ class UserRepositoryTest {
     @Autowired
     private TestEntityManager entityManager;
 
+    @Test
+    void testRepoNotNull() {
+        assertNotNull(userRepository);
+    }
+
 
     @Test
     void whenFindByUsername_thenReturnUser() {
