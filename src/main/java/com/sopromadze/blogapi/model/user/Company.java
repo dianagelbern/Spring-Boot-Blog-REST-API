@@ -2,9 +2,7 @@ package com.sopromadze.blogapi.model.user;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sopromadze.blogapi.model.audit.UserDateAudit;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -19,6 +17,8 @@ import java.time.Instant;
 @Entity
 @Data
 @NoArgsConstructor
+@Builder
+@AllArgsConstructor
 @Table(name = "company")
 public class Company extends UserDateAudit {
 	private static final long serialVersionUID = 1L;

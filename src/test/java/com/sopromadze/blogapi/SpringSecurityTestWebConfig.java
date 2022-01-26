@@ -13,7 +13,7 @@ import java.util.List;
 
 @TestConfiguration
 public class SpringSecurityTestWebConfig {
-
+/*
     @Bean("customUserDetailsServiceImpl")
     @Primary
     public UserDetailsService userDetailsService() {
@@ -35,5 +35,5 @@ public class SpringSecurityTestWebConfig {
 
         return new InMemoryUserDetailsManager(List.of(user1, user2));
     }
-
+*/
 }
