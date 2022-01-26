@@ -1,5 +1,6 @@
 package com.sopromadze.blogapi.model.role;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.NaturalId;
@@ -15,6 +16,7 @@ import javax.persistence.Table;
 
 @Entity
 @Data
+@AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "roles")
 public class Role {
