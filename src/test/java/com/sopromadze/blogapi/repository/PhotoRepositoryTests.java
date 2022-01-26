@@ -51,7 +51,7 @@ public class PhotoRepositoryTests {
         photo.setAlbum(album);
 
         entityManager.persist(photo);
-        Pageable pageable = (Pageable) PageRequest.of(0,5);
+        Pageable pageable = PageRequest.of(0,5);
 
         assertEquals(1,repository.findByAlbumId(1L,pageable).getTotalElements());
     }
