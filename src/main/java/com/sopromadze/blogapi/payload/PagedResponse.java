@@ -1,5 +1,6 @@
 package com.sopromadze.blogapi.payload;
 
+import lombok.Builder;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -7,6 +8,7 @@ import java.util.Collections;
 import java.util.List;
 
 @Data
+@Builder
 public class PagedResponse<T> {
 	private List<T> content;
 	private int page;
