@@ -22,6 +22,11 @@ class TagRepositoryTest {
     private TestEntityManager entityManager;
 
     @Test
+    void testRepoNotNull() {
+        assertNotNull(tagRepository);
+    }
+
+    @Test
     void whenFindByName_thenReturnTag() {
 
 
