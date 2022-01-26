@@ -2,9 +2,7 @@ package com.sopromadze.blogapi.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sopromadze.blogapi.model.audit.UserDateAudit;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -22,6 +20,8 @@ import javax.validation.constraints.NotBlank;
 @Entity
 @Data
 @NoArgsConstructor
+@Builder
+@AllArgsConstructor
 @Table(name = "photos", uniqueConstraints = { @UniqueConstraint(columnNames = { "title" }) })
 public class Photo extends UserDateAudit {
 	private static final long serialVersionUID = 1L;
