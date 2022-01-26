@@ -3,7 +3,6 @@ package com.sopromadze.blogapi.repository;
 import com.sopromadze.blogapi.model.Post;
 import com.sopromadze.blogapi.model.user.User;
 import lombok.extern.java.Log;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
