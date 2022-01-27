@@ -20,9 +20,6 @@ public class SpringSecurityTestWebConfig {
     @Primary
     public UserDetailsService userDetailsService() {
 
-        Role admin = new Role(1L, RoleName.ROLE_ADMIN);
-        Role user = new Role(2L, RoleName.ROLE_USER);
-
         UserPrincipal user1 = new UserPrincipal(1L, "Nombre1", "Apellido1", "admin", "admin@admin.com", "admin", List.of(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString())));
         UserPrincipal user2 = new UserPrincipal(2L, "Nombre2", "Apellido2", "user", "user@user.com", "user", List.of(new SimpleGrantedAuthority(RoleName.ROLE_USER.toString())));
 
