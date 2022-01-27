@@ -16,7 +16,7 @@ import java.util.List;
 @TestConfiguration
 public class SpringSecurityTestWebConfig {
 
-    @Bean("customUserDetailsServiceImpl")
+    @Bean("CustomUserDetailsServiceImpl")
     @Primary
     public UserDetailsService userDetailsService() {
 
