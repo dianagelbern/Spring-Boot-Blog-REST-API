@@ -95,7 +95,7 @@ class UserServiceImplTest {
                 .posts(listaDePost)
                 .email("diana@gmail.com")
                 .build();
-        userRepository.save(diana);
+
         diana.setCreatedAt(Instant.now());
         diana.setUpdatedAt(Instant.now());
 
@@ -103,8 +103,10 @@ class UserServiceImplTest {
                 diana.getCreatedAt(), diana.getEmail(), diana.getAddress(), diana.getPhone(), diana.getWebsite(),
                 diana.getCompany(), postRepository.countByCreatedBy(diana.getId()));
 
+        when(userRepository.save(diana)).thenReturn(diana);
         when(userRepository.getUserByName(diana.getUsername())).thenReturn(diana);
         when(postRepository.countByCreatedBy(any(Long.class))).thenReturn((long) diana.getPosts().size());
+        
         assertEquals(up.getUsername(), userService.getUserProfile(diana.getUsername()).getUsername());
 
     }
