@@ -8,12 +8,10 @@ import com.sopromadze.blogapi.payload.PagedResponse;
 import com.sopromadze.blogapi.service.PostService;
 import lombok.extern.java.Log;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -22,18 +20,14 @@ import java.time.Instant;
 import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
-import static org.modelmapper.internal.bytebuddy.matcher.ElementMatchers.is;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@Log
-@ExtendWith(SpringExtension.class)
-@SpringBootTest(webEnvironment =
-        SpringBootTest.WebEnvironment.RANDOM_PORT, classes =
-        {SpringSecurityTestWebConfig.class})
+
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = {SpringSecurityTestWebConfig.class})
 @AutoConfigureMockMvc
+@Log
 public class UserControllerTests {
 
     @Autowired
@@ -44,7 +38,7 @@ public class UserControllerTests {
 
     @MockBean
     PostService postService;
-/*
+
     @Test
     void getPostsCreatedBy_givenUsername_ShouldShowPostList() throws Exception{
 
@@ -61,7 +55,7 @@ public class UserControllerTests {
         Post post = new Post();
         post.setTitle("Controlador de post");
         post.setBody("Esto es un post de prueba para testear un método");
-        post.setCreatedBy(user.getId());
+        post.setCreatedBy(1L);
         post.setUpdatedAt(Instant.now());
 
         PagedResponse<Post> postList = new PagedResponse<Post>();
@@ -71,15 +65,15 @@ public class UserControllerTests {
 
         when(postService.getPostsByCreatedBy(user.getUsername(), 0, 10)).thenReturn(postList);
 
-        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/api/users"))
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/api/users/efatuarte/posts"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].id", is(1L)))
                 .andExpect(jsonPath("$.content", hasSize(1)))
-                .andExpect(content().json(objectMapper.writeValueAsString(postList)));
+                .andExpect(content().json(objectMapper.writeValueAsString(postList)))
+                .andReturn();
 
         log.info(result.getResponse().getContentAsString());
 
     }
 
- */
 }
