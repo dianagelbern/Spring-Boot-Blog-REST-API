@@ -94,7 +94,7 @@ public class AlbumServiceImplTest {
 
         AlbumRequest albumRequest = new AlbumRequest();
 
-        assertEquals(albumService.addAlbum(albumRequest, ernestoPrincipal), ResponseEntity.status(HttpStatus.CREATED));
+        assertEquals(albumService.addAlbum(albumRequest, ernestoPrincipal), new ResponseEntity<>(album, HttpStatus.CREATED));
 
     }
 }
