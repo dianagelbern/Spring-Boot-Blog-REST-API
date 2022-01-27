@@ -1,13 +1,18 @@
 package com.sopromadze.blogapi.service.impl;
 
+import com.sopromadze.blogapi.exception.AppException;
+import com.sopromadze.blogapi.exception.BadRequestException;
 import com.sopromadze.blogapi.model.Category;
 import com.sopromadze.blogapi.model.Post;
+import com.sopromadze.blogapi.model.role.Role;
+import com.sopromadze.blogapi.model.role.RoleName;
 import com.sopromadze.blogapi.model.user.Address;
 import com.sopromadze.blogapi.model.user.Company;
 import com.sopromadze.blogapi.model.user.User;
 import com.sopromadze.blogapi.payload.UserIdentityAvailability;
 import com.sopromadze.blogapi.payload.UserProfile;
 import com.sopromadze.blogapi.repository.PostRepository;
+import com.sopromadze.blogapi.repository.RoleRepository;
 import com.sopromadze.blogapi.repository.UserRepository;
 
 import com.sopromadze.blogapi.service.UserService;
@@ -23,6 +28,7 @@ import org.mockito.quality.Strictness;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 
 import java.time.Instant;
@@ -36,6 +42,12 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class UserServiceImplTest {
+
+    @Mock
+    RoleRepository roleRepository;
+
+    @Mock
+    PasswordEncoder passwordEncoder;
 
     @Mock
     UserRepository userRepository;
@@ -95,6 +107,87 @@ class UserServiceImplTest {
         when(postRepository.countByCreatedBy(any(Long.class))).thenReturn((long) diana.getPosts().size());
         assertEquals(up.getUsername(), userService.getUserProfile(diana.getUsername()).getUsername());
 
+    }
+
+    @Test
+    void addUser_givenUser_thenReturnUserTest(){
+        User u = new User();
+        u.setUsername("cesperic21");
+        u.setFirstName("Richard");
+        u.setLastName("Céspedes Pedrazas");
+        u.setEmail("cespedes@pedrazas.com");
+        u.setPassword("123456");
+        u.setUpdatedAt(Instant.now());
+        u.setCreatedAt(Instant.now());
+        Role role = new Role();
+        role.setName(RoleName.ROLE_USER);
+
+        when(userRepository.existsByUsername("cesperic")).thenReturn(false);
+        when(roleRepository.findByName(RoleName.ROLE_USER)).thenReturn(Optional.of(role));
+        when(passwordEncoder.encode(u.getPassword())).thenReturn(u.getPassword());
+        when(userRepository.save(u)).thenReturn(u);
+
+        User result = userService.addUser(u);
+
+        assertEquals(u, result);
+    }
+
+    @Test
+    void addUser_givenExistUsername_ThrowsBadRequestException_Test() {
+        User u = new User();
+        u.setUsername("cesperic21");
+        u.setFirstName("Richard");
+        u.setLastName("Céspedes Pedrazas");
+        u.setEmail("cespedes@pedrazas.com");
+        u.setPassword("123456");
+        u.setUpdatedAt(Instant.now());
+        u.setCreatedAt(Instant.now());
+        Role role = new Role();
+        role.setName(RoleName.ROLE_USER);
+
+        when(userRepository.existsByUsername("cesperic21")).thenReturn(true);
+
+        assertThrows(BadRequestException.class, () -> userService.addUser(u));
+    }
+
+    @Test
+    void addUser_givenExistEmail_ThrowsBadRequestException_Test() {
+        User u = new User();
+        u.setUsername("cesperic21");
+        u.setFirstName("Richard");
+        u.setLastName("Céspedes Pedrazas");
+        u.setEmail("cespedes@pedrazas.com");
+        u.setPassword("123456");
+        u.setUpdatedAt(Instant.now());
+        u.setCreatedAt(Instant.now());
+        Role role = new Role();
+        role.setName(RoleName.ROLE_USER);
+
+        when(userRepository.existsByUsername("cesperic")).thenReturn(false);
+        when(userRepository.existsByEmail("cespedes@pedrazas.com")).thenReturn(true);
+
+        assertThrows(BadRequestException.class, () -> userService.addUser(u));
+    }
+
+    @Test
+    void addUser_givenRole_throwsAppException_Test(){
+        User u = new User();
+        u.setUsername("cesperic21");
+        u.setFirstName("Richard");
+        u.setLastName("Céspedes Pedrazas");
+        u.setEmail("cespedes@pedrazas.com");
+        u.setPassword("123456");
+        u.setUpdatedAt(Instant.now());
+        u.setCreatedAt(Instant.now());
+        Role role = new Role();
+        role.setName(RoleName.ROLE_USER);
+
+        when(userRepository.existsByUsername("cesperic")).thenReturn(false);
+        when(roleRepository.findByName(RoleName.ROLE_USER)).thenThrow(new AppException("User role not set"));
+        when(passwordEncoder.encode(u.getPassword())).thenReturn(u.getPassword());
+        when(userRepository.save(u)).thenReturn(u);
+
+        assertThrows(AppException.class, () -> userService.addUser(u));
     }
 
 }
