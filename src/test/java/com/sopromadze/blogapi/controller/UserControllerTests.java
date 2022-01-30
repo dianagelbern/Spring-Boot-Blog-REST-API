@@ -143,9 +143,9 @@ public class UserControllerTests {
                 .andExpect(status().isOk());
    }
 
-     @Test
-    @WithUserDetails("admin")
-    void setAddress_givenInfoRequest_thenReturnOK_test() throws Exception{
+   @Test
+   @WithUserDetails("admin")
+   void setAddress_givenInfoRequest_thenReturnOK_test() throws Exception{
 
         User user = new User();
         user.setId(1L);
@@ -177,7 +177,6 @@ public class UserControllerTests {
         user.setWebsite(infoRequest.getWebsite());
         user.setPhone(infoRequest.getPhone());
 
-
         UserProfile up = new UserProfile(user.getId(), user.getUsername(),
                 user.getFirstName(), user.getLastName(), user.getCreatedAt(),
                 user.getEmail(), user.getAddress(), user.getPhone(), user.getWebsite(),
@@ -189,5 +188,4 @@ public class UserControllerTests {
                         .content(objectMapper.writeValueAsString(infoRequest)))
                 .andExpect(status().isOk());
     }
-
 }
