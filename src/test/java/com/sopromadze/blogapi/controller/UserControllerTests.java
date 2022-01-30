@@ -8,6 +8,7 @@ import com.sopromadze.blogapi.model.user.User;
 import com.sopromadze.blogapi.payload.ApiResponse;
 import com.sopromadze.blogapi.payload.PagedResponse;
 import com.sopromadze.blogapi.payload.UserIdentityAvailability;
+import com.sopromadze.blogapi.payload.UserProfile;
 import com.sopromadze.blogapi.security.UserPrincipal;
 import com.sopromadze.blogapi.service.impl.PostServiceImpl;
 import com.sopromadze.blogapi.service.impl.UserServiceImpl;
@@ -129,5 +130,18 @@ public class UserControllerTests {
                 .andReturn();
 
     }
+  
+  @Test
+   user-controller-getUserProfile
+    void givenUserName_thenReturnUSerProfile() throws Exception{
+        UserProfile userProfile = UserProfile.builder().username("Gelbern").firstName("Diana").lastName("González").email("diana@gmail.com").build();
+
+        when(userService.getUserProfile(userProfile.getUsername())).thenReturn(userProfile);
+
+        mockMvc.perform(get("/api/users/{username}/profile", userProfile.getUsername())
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(userProfile)))
+                .andExpect(status().isOk());
+   }
 
 }
