@@ -29,7 +29,6 @@ public class PostRepositoryTests {
     private TestEntityManager testEntityManager;
 
     @Test
-
     void findByCreatedBy_givenExistUserId_ShouldSuccess() {
 
         User user = new User();
@@ -56,7 +55,7 @@ public class PostRepositoryTests {
         Page<Post> posts=repository.findByCreatedBy(user.getId(), pageable);
 
         assertEquals(1, posts.getTotalElements());
-        assertEquals(p1.getId(),posts.getContent().get(0).getUser().getId());
+        assertEquals(p1,posts.getContent().get(0));
     }
 
     @Test
@@ -121,8 +120,7 @@ public class PostRepositoryTests {
         testEntityManager.persist(p1);
         testEntityManager.flush();
 
-        Long count =repository.countByCreatedBy(user.getId());
 
-        assertEquals(1, count);
+        assertEquals(1, repository.countByCreatedBy(user.getId()));
     }
 }
