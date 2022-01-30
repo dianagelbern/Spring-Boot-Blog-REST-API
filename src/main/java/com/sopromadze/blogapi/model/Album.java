@@ -3,8 +3,7 @@ package com.sopromadze.blogapi.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sopromadze.blogapi.model.audit.UserDateAudit;
 import com.sopromadze.blogapi.model.user.User;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -26,6 +25,9 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "albums", uniqueConstraints = { @UniqueConstraint(columnNames = { "title" }) })
 public class Album extends UserDateAudit {
 	private static final long serialVersionUID = 1L;
