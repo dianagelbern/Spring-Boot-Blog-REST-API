@@ -5,6 +5,7 @@ import com.sopromadze.blogapi.SpringSecurityTestWebConfig;
 import com.sopromadze.blogapi.model.Post;
 import com.sopromadze.blogapi.model.role.RoleName;
 import com.sopromadze.blogapi.model.user.User;
+import com.sopromadze.blogapi.payload.ApiResponse;
 import com.sopromadze.blogapi.payload.PagedResponse;
 import com.sopromadze.blogapi.payload.UserIdentityAvailability;
 import com.sopromadze.blogapi.security.UserPrincipal;
@@ -16,7 +17,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -28,6 +31,7 @@ import java.util.List;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
@@ -98,6 +102,32 @@ public class UserControllerTests {
                 .param("username", userPrincipal.getUsername())
                 .content(objectMapper.writeValueAsString(userIdentityAvailability)))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithUserDetails("admin")
+    void givenAdmin_givenUsername_shouldShowSucces_test () throws Exception{
+
+        User user = User.builder()
+                .id(1L)
+                .firstName("Richard")
+                .lastName("Cespedes")
+                .username("cespedesPeric21")
+                .password("123456789")
+                .email("cespedesPeric21@triana.com")
+                .phone("123456789")
+                .build();
+
+        ApiResponse ap = new ApiResponse(Boolean.TRUE, "You gave ADMIN role to user: " + user.getUsername());
+        ap.setStatus(HttpStatus.OK);
+        when(userService.giveAdmin(user.getUsername())).thenReturn(ap);
+
+        MvcResult result = mockMvc.perform(put("/api/users/{username}/giveAdmin", user.getUsername()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message", is("You gave ADMIN role to user: " + user.getUsername())))
+                .andExpect(content().json(objectMapper.writeValueAsString(ap)))
+                .andReturn();
+
     }
 
 }
