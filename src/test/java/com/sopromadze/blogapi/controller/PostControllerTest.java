@@ -71,4 +71,29 @@ class PostControllerTest {
                 .andExpect(status().isOk())
                 .andReturn();
     }
+
+    @Test
+    void getAllPost_givenPostList_shouldReturnPagedResponse() throws Exception{
+
+        Post post = Post.builder()
+                .id(1L)
+                .title("Un Test")
+                .body("Esto es un post para tests")
+                .build();
+
+        PagedResponse<Post> pagedResult = new PagedResponse<>();
+        pagedResult.setContent(List.of(post));
+        pagedResult.setSize(1);
+        pagedResult.setPage(10);
+
+        when(postService.getAllPosts(0, 10)).thenReturn(pagedResult);
+
+        mockMvc.perform(get("/api/posts/?page={page}&size={size}", 0, 10)
+                        .contentType("application/json").content(objectMapper.writeValueAsString(post))
+                        .content(String.valueOf(jsonPath("$.content[0].id", is(1))))
+                        .content(String.valueOf(jsonPath("$.content", hasSize(1)))))
+                .andExpect(status().isOk())
+                .andReturn();
+
+    }
 }
