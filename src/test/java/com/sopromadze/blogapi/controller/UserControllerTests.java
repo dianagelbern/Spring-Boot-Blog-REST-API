@@ -143,7 +143,7 @@ public class UserControllerTests {
                 .andExpect(status().isOk());
    }
 
-    @Test
+     @Test
     @WithUserDetails("admin")
     void setAddress_givenInfoRequest_thenReturnOK_test() throws Exception{
 
