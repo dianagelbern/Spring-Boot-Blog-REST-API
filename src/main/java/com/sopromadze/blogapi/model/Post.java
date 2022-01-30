@@ -5,10 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.sopromadze.blogapi.model.audit.UserDateAudit;
 import com.sopromadze.blogapi.model.user.User;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -30,6 +27,9 @@ import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Data
 @Table(name = "posts", uniqueConstraints = { @UniqueConstraint(columnNames = { "title" }) })
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
