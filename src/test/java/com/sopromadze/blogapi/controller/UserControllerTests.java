@@ -142,4 +142,50 @@ public class UserControllerTests {
                 .content(objectMapper.writeValueAsString(userProfile)))
                 .andExpect(status().isOk());
    }
+
+    @Test
+    @WithUserDetails("admin")
+    void setAddress_givenInfoRequest_thenReturnOK_test() throws Exception{
+
+        User user = new User();
+        user.setId(1L);
+        user.setFirstName("Richard");
+        user.setLastName("Céspedes");
+        user.setUsername("rick4");
+        user.setEmail("richard@cespedes.com");
+        user.setPassword("123456");
+
+        UserPrincipal richard = new UserPrincipal(1L, "Richard", "Céspedes", "rick4", "richard@cespedes.com", "123456", List.of(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString())));
+        InfoRequest infoRequest = new InfoRequest();
+        infoRequest.setWebsite("website");
+        infoRequest.setLng("3458949");
+        infoRequest.setLat("2654636");
+        infoRequest.setCompanyName("companyName");
+        infoRequest.setZipcode("92548");
+        infoRequest.setBs("bs");
+        infoRequest.setCity("sevilla");
+        infoRequest.setSuite("normal");
+        infoRequest.setStreet("Calle condes de bustillo");
+
+        Geo geo = new Geo(infoRequest.getLat(), infoRequest.getLng());
+        Address address = new Address(infoRequest.getStreet(), infoRequest.getSuite(), infoRequest.getCity(),
+                infoRequest.getZipcode(), geo);
+        Company company = new Company(infoRequest.getCompanyName(), infoRequest.getCatchPhrase(), infoRequest.getBs());
+
+        user.setAddress(address);
+        user.setCompany(company);
+        user.setWebsite(infoRequest.getWebsite());
+        user.setPhone(infoRequest.getPhone());
+
+        UserProfile up = new UserProfile(user.getId(), user.getUsername(),
+                user.getFirstName(), user.getLastName(), user.getCreatedAt(),
+                user.getEmail(), user.getAddress(), user.getPhone(), user.getWebsite(),
+                user.getCompany(), 0L);
+        when(userService.setOrUpdateInfo(richard, infoRequest)).thenReturn(up);
+
+        mockMvc.perform(put("/api/users/setOrUpdateInfo")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(infoRequest)))
+                .andExpect(status().isOk());
+    }
 }
