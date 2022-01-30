@@ -105,7 +105,7 @@ public class UserControllerTests {
                 .andExpect(status().isOk());
     }
 
-
+    @Test
     @WithUserDetails("admin")
     void givenAdmin_givenUsername_shouldShowSucces_test () throws Exception{
 
