@@ -3,6 +3,7 @@ package com.sopromadze.blogapi.payload;
 import lombok.Data;
 
 @Data
+
 public class PhotoResponse {
 	private Long id;
 	private String title;
