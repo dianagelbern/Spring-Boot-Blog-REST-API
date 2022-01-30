@@ -132,12 +132,11 @@ public class UserControllerTests {
     }
   
   @Test
-   user-controller-getUserProfile
-    void givenUserName_thenReturnUSerProfile() throws Exception{
+  void givenUserName_thenReturnUSerProfile() throws Exception{
         UserProfile userProfile = UserProfile.builder().username("Gelbern").firstName("Diana").lastName("González").email("diana@gmail.com").build();
 
         when(userService.getUserProfile(userProfile.getUsername())).thenReturn(userProfile);
-
+        
         mockMvc.perform(get("/api/users/{username}/profile", userProfile.getUsername())
                 .contentType("application/json")
                 .content(objectMapper.writeValueAsString(userProfile)))
