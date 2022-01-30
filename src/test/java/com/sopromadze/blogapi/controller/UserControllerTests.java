@@ -3,18 +3,25 @@ package com.sopromadze.blogapi.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sopromadze.blogapi.SpringSecurityTestWebConfig;
 import com.sopromadze.blogapi.model.Post;
+import com.sopromadze.blogapi.model.role.RoleName;
 import com.sopromadze.blogapi.model.user.User;
 import com.sopromadze.blogapi.payload.PagedResponse;
+import com.sopromadze.blogapi.payload.UserIdentityAvailability;
+import com.sopromadze.blogapi.security.UserPrincipal;
 import com.sopromadze.blogapi.service.impl.PostServiceImpl;
+import com.sopromadze.blogapi.service.impl.UserServiceImpl;
 import lombok.extern.java.Log;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+
 import java.time.Instant;
 import java.util.List;
 
@@ -38,8 +45,11 @@ public class UserControllerTests {
     @MockBean
     PostServiceImpl postService;
 
+    @MockBean
+    UserServiceImpl userService;
+
     @Test
-    void getPostsCreatedBy_givenUsername_ShouldShowPostList() throws Exception{
+    void getPostsCreatedBy_givenUsername_ShouldShowPostList() throws Exception {
 
         User user = User.builder()
                 .id(1L)
@@ -72,6 +82,22 @@ public class UserControllerTests {
                 .andExpect(content().json(objectMapper.writeValueAsString(postList)))
                 .andReturn();
 
+    }
+
+
+    @Test
+    void givenUsername_thenCheckAvaiability() throws Exception {
+
+        UserPrincipal userPrincipal = new UserPrincipal(1L, "Diana", "González", "Gelbern", "diana@gmail.com", "123456789", List.of(new SimpleGrantedAuthority(RoleName.ROLE_USER.toString())));
+
+        UserIdentityAvailability userIdentityAvailability = new UserIdentityAvailability(true);
+        when(userService.checkUsernameAvailability(userPrincipal.getUsername())).thenReturn(userIdentityAvailability);
+
+        mockMvc.perform(get("/api/users/checkUsernameAvailability")
+                .contentType("application/json")
+                .param("username", userPrincipal.getUsername())
+                .content(objectMapper.writeValueAsString(userIdentityAvailability)))
+                .andExpect(status().isOk());
     }
 
 }
