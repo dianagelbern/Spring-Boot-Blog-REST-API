@@ -52,8 +52,7 @@ public class PhotoControllerTests {
         PhotoResponse pr = new PhotoResponse(1L, "titulo", "url", "thumbnailUrl", 1L);
 
         when(photoService.getPhoto(1L)).thenReturn(pr);
-        log.info(pr.toString());
-        ResponseEntity response = new ResponseEntity< >(pr, HttpStatus.OK);
+
         MvcResult result1 = mockMvc.perform(get("/api/photos/{id}", 1))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
