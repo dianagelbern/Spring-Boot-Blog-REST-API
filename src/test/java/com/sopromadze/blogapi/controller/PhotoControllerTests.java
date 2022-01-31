@@ -7,6 +7,7 @@ import com.sopromadze.blogapi.model.Photo;
 import com.sopromadze.blogapi.model.role.RoleName;
 import com.sopromadze.blogapi.payload.ApiResponse;
 import com.sopromadze.blogapi.payload.PagedResponse;
+import com.sopromadze.blogapi.payload.PhotoRequest;
 import com.sopromadze.blogapi.payload.PhotoResponse;
 import com.sopromadze.blogapi.security.UserPrincipal;
 import com.sopromadze.blogapi.service.impl.PhotoServiceImpl;
@@ -33,8 +34,7 @@ import static com.sopromadze.blogapi.utils.AppConstants.CREATED_AT;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = {SpringSecurityTestWebConfig.class})
@@ -145,5 +145,113 @@ public class PhotoControllerTests {
 
     }
 
+    @Test
+    @WithUserDetails("user")
+    void addPhoto_givenPhotoRequest_thenReturnCreated() throws Exception {
 
+        UserPrincipal user2 = new UserPrincipal(2L, "Nombre2", "Apellido2", "user", "user@user.com", "user", List.of(new SimpleGrantedAuthority(RoleName.ROLE_USER.toString())));
+        PhotoRequest pr=PhotoRequest.builder()
+                .albumId(1L)
+                .thumbnailUrl("www.google.com/images/images213124.jpg")
+                .title("titulo photo request")
+                .url("www.google.com/images/images21312124.jpg")
+                .build();
+
+        PhotoResponse pres = new PhotoResponse(3L, "titulo del photo response", "www.google.com/images/images213124.jpg", "www.google.com/images/images213124.jpg", 1L);
+
+        when(photoService.addPhoto(pr, user2)).thenReturn(pres);
+
+        mockMvc.perform(post("/api/photos/")
+                        .contentType("application/json").content(objectMapper.writeValueAsString(pres)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+    }
+
+    @Test
+    @WithUserDetails("admin")
+    void addPhoto_givenPhotoRequest_thenReturnForbidden() throws Exception {
+
+        UserPrincipal user2 = new UserPrincipal(2L, "Nombre2", "Apellido2", "user", "user@user.com", "user", List.of(new SimpleGrantedAuthority(RoleName.ROLE_USER.toString())));
+        PhotoRequest pr=PhotoRequest.builder()
+                .albumId(1L)
+                .thumbnailUrl("www.google.com/images/images213124.jpg")
+                .title("titulo photo request")
+                .url("www.google.com/images/images21312124.jpg")
+                .build();
+
+        PhotoResponse pres = new PhotoResponse(3L, "titulo del photo response", "www.google.com/images/images213124.jpg", "www.google.com/images/images213124.jpg", 1L);
+
+        when(photoService.addPhoto(pr, user2)).thenReturn(pres);
+
+        mockMvc.perform(post("/api/photos/")
+                        .contentType("application/json").content(objectMapper.writeValueAsString(pres)))
+                .andExpect(status().isForbidden())
+                .andReturn();
+
+    }
+
+    @Test
+    void addPhoto_givenPhotoRequest_thenReturnUnauthorized() throws Exception {
+        UserPrincipal user2 = new UserPrincipal(2L, "Nombre2", "Apellido2", "user", "user@user.com", "user", List.of(new SimpleGrantedAuthority(RoleName.ROLE_USER.toString())));
+        PhotoRequest pr=PhotoRequest.builder()
+                .albumId(1L)
+                .thumbnailUrl("www.google.com/images/images213124.jpg")
+                .title("titulo photo request")
+                .url("www.google.com/images/images21312124.jpg")
+                .build();
+
+        PhotoResponse pres = new PhotoResponse(3L, "titulo del photo response", "www.google.com/images/images213124.jpg", "www.google.com/images/images213124.jpg", 1L);
+
+        when(photoService.addPhoto(pr, user2)).thenReturn(pres);
+
+        mockMvc.perform(post("/api/photos/")
+                        .contentType("application/json").content(objectMapper.writeValueAsString(pres)))
+                .andExpect(status().isUnauthorized())
+                .andReturn();
+
+    }
+
+    @Test
+    @WithUserDetails("user")
+    void updatePhoto_givenPhotoRequest_thenReturnOk() throws Exception {
+
+        UserPrincipal user2 = new UserPrincipal(2L, "Nombre2", "Apellido2", "user", "user@user.com", "user", List.of(new SimpleGrantedAuthority(RoleName.ROLE_USER.toString())));
+        PhotoRequest pr=PhotoRequest.builder()
+                .albumId(1L)
+                .thumbnailUrl("www.google.com/images/images213124.jpg")
+                .title("titulo photo request")
+                .url("www.google.com/images/images21312124.jpg")
+                .build();
+
+        PhotoResponse pres = new PhotoResponse(1L, "titulo del photo response", "www.google.com/images/images213124.jpg", "www.google.com/images/images213124.jpg", 1L);
+
+        when(photoService.updatePhoto(1L, pr, user2)).thenReturn(pres);
+
+        mockMvc.perform(put("/api/photos/{id}", 1)
+                        .contentType("application/json").content(objectMapper.writeValueAsString(pres)))
+                .andExpect(status().isOk())
+                .andReturn();
+    }
+
+    @Test
+    void updatePhoto_givenPhotoRequest_thenReturnUnauthorized() throws Exception {
+
+        UserPrincipal user2 = new UserPrincipal(2L, "Nombre2", "Apellido2", "user", "user@user.com", "user", List.of(new SimpleGrantedAuthority(RoleName.ROLE_USER.toString())));
+        PhotoRequest pr=PhotoRequest.builder()
+                .albumId(1L)
+                .thumbnailUrl("www.google.com/images/images213124.jpg")
+                .title("titulo photo request")
+                .url("www.google.com/images/images21312124.jpg")
+                .build();
+
+        PhotoResponse pres = new PhotoResponse(1L, "titulo del photo response", "www.google.com/images/images213124.jpg", "www.google.com/images/images213124.jpg", 1L);
+
+        when(photoService.updatePhoto(1L, pr, user2)).thenReturn(pres);
+
+        mockMvc.perform(put("/api/photos/{id}", 1)
+                        .contentType("application/json").content(objectMapper.writeValueAsString(pres)))
+                .andExpect(status().isUnauthorized())
+                .andReturn();
+    }
 }
