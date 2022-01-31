@@ -35,7 +35,6 @@ public class TagControllerTests {
     TagServiceImpl tagService;
 
     @Test
-    @WithUserDetails("user")
     void addTag_givenUnauthorizedUser_shouldReturn401() throws Exception {
 
         Tag tag = new Tag();
@@ -53,7 +52,7 @@ public class TagControllerTests {
     void addTag_givenUserAndTag_shouldReturn201() throws Exception {
 
         Tag tag = new Tag();
-        tag.setName("SucessTag");
+        tag.setName("SuccessTag");
 
         mockMvc.perform(post("/api/tags")
                         .contentType("application/json")
