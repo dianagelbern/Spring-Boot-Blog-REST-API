@@ -5,7 +5,7 @@ import com.sopromadze.blogapi.SpringSecurityTestWebConfig;
 import com.sopromadze.blogapi.model.Category;
 import com.sopromadze.blogapi.model.Comment;
 import com.sopromadze.blogapi.model.Post;
-import com.sopromadze.blogapi.payload.PagedResponse;
+import com.sopromadze.blogapi.payload.*;
 import com.sopromadze.blogapi.service.CommentService;
 import lombok.extern.java.Log;
 import org.junit.jupiter.api.Test;
@@ -13,44 +13,35 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sopromadze.blogapi.SpringSecurityTestWebConfig;
 import com.sopromadze.blogapi.model.Post;
 import com.sopromadze.blogapi.model.role.RoleName;
 import com.sopromadze.blogapi.model.user.User;
-import com.sopromadze.blogapi.payload.ApiResponse;
 import com.sopromadze.blogapi.payload.PagedResponse;
-import com.sopromadze.blogapi.payload.UserIdentityAvailability;
-import com.sopromadze.blogapi.payload.UserProfile;
 import com.sopromadze.blogapi.security.UserPrincipal;
-import com.sopromadze.blogapi.service.impl.PostServiceImpl;
-import com.sopromadze.blogapi.service.impl.UserServiceImpl;
-import lombok.extern.java.Log;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.test.context.support.WithUserDetails;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
 import java.util.List;
 
@@ -70,8 +61,10 @@ class CommentControllerTest {
     @MockBean
     CommentService commentService;
 
+    private JacksonTester<Comment> jsonComment;
+
     @Test
-    void givenPostId_thenReturnComments() throws Exception {
+    void givenPostId_thenReturnACommentSucces() throws Exception {
         Category cat = Category.builder().id(1L).name("Cachorritos").build();
         Post post = Post.builder().id(1L).category(cat).title("Mi nueva mascota").body("Esta es mi nueva mascota").build();
         Comment comment = Comment.builder().id(1L).name("Esto es el nombre").body("Cuerpo de un comentario").post(post).build();
@@ -89,4 +82,89 @@ class CommentControllerTest {
                 .andExpect(status().isOk())
                 .andReturn();
     }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    void addComentSucces() throws Exception{
+        Category cat = Category.builder().id(1L).name("Cachorritos").build();
+        Post post = Post.builder().id(1L).category(cat).title("Mi nueva mascota").body("Esta es mi nueva mascota").build();
+        User diana = User.builder()
+                .id(1L)
+                .firstName("Diana")
+                .lastName("González")
+                .username("Gelbern")
+                .password("123456789")
+                .email("diana@gmail.com")
+                .build();
+        diana.setCreatedAt(Instant.now());
+        diana.setUpdatedAt(Instant.now());
+        UserPrincipal usuario = UserPrincipal.builder().username(diana.getUsername()).authorities(Arrays.asList(new SimpleGrantedAuthority(RoleName.ROLE_USER.toString()))).username(diana.getUsername()).password("1234567").build();
+        Comment comment = Comment.builder().id(1L).name("Esto es el nombre").body("Cuerpo de un comentario").post(post).build();
+        CommentRequest commentRequest = new CommentRequest();
+        commentRequest.setBody(comment.getBody());
+
+        Mockito.when(commentService.addComment(commentRequest, post.getId(), usuario)).thenReturn(comment);
+
+        mockMvc.perform(post("/api/posts/{postId}/comments/", 1L)
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(comment)))
+                .andExpect(status().isCreated());
+
+    }
+
+    @Test
+    void addComentUnauthorized() throws Exception{
+        Category cat = Category.builder().id(1L).name("Cachorritos").build();
+        Post post = Post.builder().id(1L).category(cat).title("Mi nueva mascota").body("Esta es mi nueva mascota").build();
+        User diana = User.builder()
+                .id(1L)
+                .firstName("Diana")
+                .lastName("González")
+                .username("Gelbern")
+                .password("123456789")
+                .email("diana@gmail.com")
+                .build();
+        diana.setCreatedAt(Instant.now());
+        diana.setUpdatedAt(Instant.now());
+        UserPrincipal usuario = UserPrincipal.builder().username(diana.getUsername()).username(diana.getUsername()).password("1234567").build();
+        Comment comment = Comment.builder().id(1L).name("Esto es el nombre").body("Cuerpo de un comentario").post(post).build();
+        CommentRequest commentRequest = new CommentRequest();
+        commentRequest.setBody(comment.getBody());
+
+        Mockito.when(commentService.addComment(commentRequest, post.getId(), usuario)).thenReturn(comment);
+
+        mockMvc.perform(post("/api/posts/{postId}/comments/", 1L)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(comment)))
+                .andExpect(status().isUnauthorized());
+
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    void addComentError() throws Exception{
+        Category cat = Category.builder().id(1L).name("Cachorritos").build();
+        Post post = Post.builder().id(1L).category(cat).title("Mi nueva mascota").body("Esta es mi nueva mascota").build();
+        User diana = User.builder()
+                .id(1L)
+                .firstName("Diana")
+                .lastName("González")
+                .username("Gelbern")
+                .password("123456789")
+                .email("diana@gmail.com")
+                .build();
+        diana.setCreatedAt(Instant.now());
+        diana.setUpdatedAt(Instant.now());
+        UserPrincipal usuario = UserPrincipal.builder().username(diana.getUsername()).authorities(Arrays.asList(new SimpleGrantedAuthority(RoleName.ROLE_USER.toString()))).username(diana.getUsername()).password("1234567").build();
+        Comment comment = Comment.builder().id(1L).name("Esto es el nombre").body("Cuerpo de un comentario").post(post).build();
+        CommentRequest commentRequest = new CommentRequest();
+
+        Mockito.when(commentService.addComment(commentRequest, post.getId(), usuario)).thenReturn(comment);
+
+        mockMvc.perform(post("/api/posts/{postId}/comments/", 1L)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(commentRequest)))
+                .andExpect(status().isBadRequest());
+    }
+
 }
