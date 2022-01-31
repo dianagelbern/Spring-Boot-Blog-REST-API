@@ -51,8 +51,12 @@ public class TagControllerTests {
     @WithUserDetails("user")
     void addTag_givenUserAndTag_shouldReturn201() throws Exception {
 
+        UserPrincipal ernestoPrincipal = new UserPrincipal(1L,"Ernesto","Fatuarte", "efatuarte","efatuarte@gmail.com","123456789", List.of(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString())));
+
         Tag tag = new Tag();
-        tag.setName("SuccessTag");
+        tag.setName("FailedTag");
+
+        when(tagService.addTag(tag, ernestoPrincipal)).thenReturn(tag);
 
         mockMvc.perform(post("/api/tags")
                         .contentType("application/json")
