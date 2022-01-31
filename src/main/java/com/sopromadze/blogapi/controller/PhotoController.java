@@ -71,6 +71,6 @@ public class PhotoController {
 	public ResponseEntity<ApiResponse> deletePhoto(@PathVariable(name = "id") Long id, @CurrentUser UserPrincipal currentUser) {
 		ApiResponse apiResponse = photoService.deletePhoto(id, currentUser);
 
-		return new ResponseEntity< >(apiResponse, HttpStatus.OK);
+		return new ResponseEntity< >(apiResponse, HttpStatus.NO_CONTENT);
 	}
 }
