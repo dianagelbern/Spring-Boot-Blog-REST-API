@@ -2,6 +2,7 @@ package com.sopromadze.blogapi.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sopromadze.blogapi.SpringSecurityTestWebConfig;
+import com.sopromadze.blogapi.config.SecurityConfig;
 import com.sopromadze.blogapi.model.Category;
 import com.sopromadze.blogapi.model.Comment;
 import com.sopromadze.blogapi.model.Post;
@@ -18,8 +19,10 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.context.support.WithUserDetails;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.web.servlet.MockMvc;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sopromadze.blogapi.SpringSecurityTestWebConfig;
@@ -44,6 +47,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -61,10 +65,11 @@ class CommentControllerTest {
     @MockBean
     CommentService commentService;
 
-    private JacksonTester<Comment> jsonComment;
+    @MockBean
+    AuthenticationManager authenticationManager;
 
     @Test
-    void givenPostId_thenReturnACommentSucces() throws Exception {
+    void givenPostId_thenReturnAllComments() throws Exception {
         Category cat = Category.builder().id(1L).name("Cachorritos").build();
         Post post = Post.builder().id(1L).category(cat).title("Mi nueva mascota").body("Esta es mi nueva mascota").build();
         Comment comment = Comment.builder().id(1L).name("Esto es el nombre").body("Cuerpo de un comentario").post(post).build();
@@ -75,10 +80,25 @@ class CommentControllerTest {
 
         Mockito.when(commentService.getAllComments(post.getId(), response.getPage(), response.getSize())).thenReturn(response);
 
+        mockMvc.perform(get("/api/posts/{postId}/comments", 1L)
+                        .contentType("application/json").content(objectMapper.writeValueAsString(response))
+                        .content(String.valueOf(jsonPath("$.content[0].id", is(1))))
+                        .content(String.valueOf(jsonPath("$.content", hasSize(1)))))
+                .andExpect(status().isOk())
+                .andReturn();
+    }
+
+    @Test
+    void givenPostId_thenReturnAComment() throws Exception {
+        Category cat = Category.builder().id(1L).name("Cachorritos").build();
+        Post post = Post.builder().id(1L).category(cat).title("Mi nueva mascota").body("Esta es mi nueva mascota").build();
+        Comment comment = Comment.builder().id(1L).name("Esto es el nombre").body("Cuerpo de un comentario").post(post).build();
+
+
+        Mockito.when(commentService.getComment(post.getId(), comment.getId())).thenReturn(comment);
+
         mockMvc.perform(get("/api/posts/{postId}/comments/{id}", 1L, 1L)
-                .contentType("application/json").content(objectMapper.writeValueAsString(comment))
-                .content(String.valueOf(jsonPath("$.content[0].id", is(1))))
-                .content(String.valueOf(jsonPath("$.content", hasSize(1)))))
+                .contentType("application/json").content(objectMapper.writeValueAsString(comment)))
                 .andExpect(status().isOk())
                 .andReturn();
     }
@@ -166,5 +186,125 @@ class CommentControllerTest {
                         .content(objectMapper.writeValueAsString(commentRequest)))
                 .andExpect(status().isBadRequest());
     }
+
+
+
+    @Test
+    void updateCommentUnauthorized()throws Exception{
+
+        Category cat = Category.builder().id(1L).name("Cachorritos").build();
+        Post post = Post.builder().id(1L).category(cat).title("Mi nueva mascota").body("Esta es mi nueva mascota").build();
+
+        CommentRequest commentRequest = new CommentRequest();
+        commentRequest.setBody("Nuevo cuerpo");
+        User diana = User.builder()
+                .id(1L)
+                .firstName("Diana")
+                .lastName("González")
+                .username("Gelbern")
+                .password("123456789")
+                .email("diana@gmail.com")
+                .build();
+        diana.setCreatedAt(Instant.now());
+        diana.setUpdatedAt(Instant.now());
+        UserPrincipal usuario = UserPrincipal.builder().username(diana.getUsername()).authorities(Arrays.asList(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))).username(diana.getUsername()).password("1234567").build();
+
+        Comment comment = Comment.builder().id(1L).name("Esto es el nombre").body("Cuerpo de un comentario").post(post).build();
+
+
+        mockMvc.perform(put("/api/posts/{postId}/comments/{id}", 1L, 1L)
+                        .contentType("application/json")
+                        .param("commentRequest","commentRequest")
+                        .content(objectMapper.writeValueAsString(comment)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    void updateCommentSucces()throws Exception{
+
+        Category cat = Category.builder().id(1L).name("Cachorritos").build();
+        Post post = Post.builder().id(1L).category(cat).title("Mi nueva mascota").body("Esta es mi nueva mascota").build();
+
+        CommentRequest commentRequest = new CommentRequest();
+        commentRequest.setBody("Nuevo cuerpo");
+        User diana = User.builder()
+                .id(1L)
+                .firstName("Diana")
+                .lastName("González")
+                .username("Gelbern")
+                .password("123456789")
+                .email("diana@gmail.com")
+                .build();
+        diana.setCreatedAt(Instant.now());
+        diana.setUpdatedAt(Instant.now());
+        UserPrincipal usuario = UserPrincipal.builder().username(diana.getUsername()).authorities(Arrays.asList(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))).username(diana.getUsername()).password("1234567").build();
+
+        Comment comment = Comment.builder().id(1L).name("Esto es el nombre").body("Cuerpo de un comentario").post(post).build();
+
+
+        mockMvc.perform(put("/api/posts/{postId}/comments/{id}", 1L, 1L)
+                        .with(SecurityMockMvcRequestPostProcessors.user("usuario").roles("USER"))
+                        .contentType("application/json")
+                        .param("commentRequest","commentRequest")
+                        .content(objectMapper.writeValueAsString(comment)))
+                .andExpect(status().isOk());
+    }
+
+
+    @Test
+    void deleteCommentUnauthorized()throws Exception{
+        Category cat = Category.builder().id(1L).name("Cachorritos").build();
+        Post post = Post.builder().id(1L).category(cat).title("Mi nueva mascota").body("Esta es mi nueva mascota").build();
+
+        User diana = User.builder()
+                .id(1L)
+                .firstName("Diana")
+                .lastName("González")
+                .username("Gelbern")
+                .password("123456789")
+                .email("diana@gmail.com")
+                .build();
+        diana.setCreatedAt(Instant.now());
+        diana.setUpdatedAt(Instant.now());
+        UserPrincipal usuario = UserPrincipal.builder().username(diana.getUsername()).authorities(Arrays.asList(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))).username(diana.getUsername()).password("1234567").build();
+        Comment comment = Comment.builder().id(1L).name("Esto es el nombre").body("Cuerpo de un comentario").post(post).build();
+        ApiResponse apiResponse = new ApiResponse(true, "Success", HttpStatus.OK);
+
+        mockMvc.perform(delete("/api/posts/{postId}/comments/{id}", 1L, 1L)
+                        .contentType("application/json")
+                .content(objectMapper.writeValueAsString(apiResponse)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    /*
+    @Test
+    @WithMockUser(roles = "USER")
+    void deleteCommentSucces()throws Exception{
+        Category cat = Category.builder().id(1L).name("Cachorritos").build();
+        Post post = Post.builder().id(1L).category(cat).title("Mi nueva mascota").body("Esta es mi nueva mascota").build();
+
+        User diana = User.builder()
+                .id(1L)
+                .firstName("Diana")
+                .lastName("González")
+                .username("Gelbern")
+                .password("123456789")
+                .email("diana@gmail.com")
+                .build();
+        diana.setCreatedAt(Instant.now());
+        diana.setUpdatedAt(Instant.now());
+        UserPrincipal usuario = UserPrincipal.builder().username(diana.getUsername()).authorities(Arrays.asList(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))).username(diana.getUsername()).password("1234567").build();
+        Comment comment = Comment.builder().id(1L).name("Esto es el nombre").body("Cuerpo de un comentario").post(post).build();
+        ApiResponse apiResponse = new ApiResponse(true, "Success", HttpStatus.OK);
+        Mockito.when(commentService.deleteComment(post.getId(), comment.getId(), usuario)).thenReturn(apiResponse);
+        mockMvc.perform(delete("/api/posts/{postId}/comments/{id}", post.getId(), comment.getId())
+                        .with(SecurityMockMvcRequestPostProcessors.user(usuario.getUsername()).roles("USER"))
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(apiResponse.getSuccess())))
+                .andExpect(status().isOk());
+    }
+     */
+
 
 }
