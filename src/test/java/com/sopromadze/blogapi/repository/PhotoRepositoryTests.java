@@ -15,6 +15,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.time.Instant;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -40,7 +41,6 @@ public class PhotoRepositoryTests {
         album.setCreatedAt(Instant.now());
         album.setUpdatedAt(Instant.now());
 
-        entityManager.persist(album);
 
         Photo photo = new Photo();
         photo.setTitle("Thriller");
@@ -50,7 +50,11 @@ public class PhotoRepositoryTests {
         photo.setUpdatedAt(Instant.now());
         photo.setAlbum(album);
 
+        album.setPhoto(List.of(photo));
+
+        entityManager.persist(album);
         entityManager.persist(photo);
+
         Pageable pageable = PageRequest.of(0,5);
 
         assertEquals(1,repository.findByAlbumId(1L,pageable).getTotalElements());

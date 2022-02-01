@@ -206,13 +206,11 @@ class PostServiceImplTest {
         t.getPosts().add(p);
         c.getPosts().add(p);
 
-        when(postRepository.save(p)).thenReturn(p);
-
-        log.info("POST: " + p);
+        when(postRepository.save(any())).thenReturn(p);
 
         PostResponse postResponse = new PostResponse();
         postResponse.setTitle(p.getTitle());
-        postResponse.setBody(p.getTitle());
+        postResponse.setBody(p.getBody());
         postResponse.setCategory(p.getCategory().getName());
         postResponse.setTags(List.of(t.getName()));
 
