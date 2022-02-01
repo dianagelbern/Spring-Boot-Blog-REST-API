@@ -183,7 +183,6 @@ class PostServiceImplTest {
         Tag t = new Tag();
         t.setId(1L);
         t.setName("Mi tag");
-
         when(tagRepository.findByName("Mi tag")).thenReturn(t);
         when(tagRepository.save(t)).thenReturn(t);
 
@@ -197,16 +196,19 @@ class PostServiceImplTest {
         p.setId(1L);
         p.setBody(pr.getBody());
         p.setTitle(pr.getTitle());
-        p.setCategory(c);
         p.setUser(user);
+        p.setCategory(c);
         p.setCreatedBy(1L);
         p.setCreatedAt(Instant.now());
         p.setUpdatedAt(Instant.now());
         p.setTags(List.of(t));
 
-        log.info("POST: " + p);
+        t.getPosts().add(p);
+        c.getPosts().add(p);
 
         when(postRepository.save(p)).thenReturn(p);
+
+        log.info("POST: " + p);
 
         PostResponse postResponse = new PostResponse();
         postResponse.setTitle(p.getTitle());
