@@ -8,6 +8,7 @@ import com.sopromadze.blogapi.model.role.RoleName;
 import com.sopromadze.blogapi.model.user.User;
 import com.sopromadze.blogapi.payload.PagedResponse;
 import com.sopromadze.blogapi.payload.PostRequest;
+import com.sopromadze.blogapi.payload.PostResponse;
 import com.sopromadze.blogapi.repository.CategoryRepository;
 import com.sopromadze.blogapi.repository.PostRepository;
 import com.sopromadze.blogapi.repository.TagRepository;
@@ -153,6 +154,60 @@ class PostServiceImplTest {
 
     @Test
     void addPost_givenPostRequestAndUser_shouldReturnPostResponse() {
-        assertEquals(1, 1);
+
+        UserPrincipal userPrincipal = new UserPrincipal(1L, "Ernesto", "Fatuarte", "efatuarte", "efatuarte@gmail.com", "123456789", List.of(new SimpleGrantedAuthority(RoleName.ROLE_USER.toString())));
+
+        Category c = new Category();
+        c.setId(1L);
+        c.setName("cat1");
+
+        Tag t = new Tag();
+        t.setId(1L);
+        t.setName("Mi tag");
+
+        User user = new User();
+        user.setId(1L);
+        user.setUsername("efatuarte");
+        user.setFirstName("Ernesto");
+        user.setLastName("Fatuarte");
+        user.setEmail("efatuarte@gmail.com");
+        user.setPassword("12345");
+        user.setCreatedAt(Instant.now());
+        user.setUpdatedAt(Instant.now());
+
+        PostRequest pr = new PostRequest();
+        pr.setTitle("Esto es un post de testeo");
+        pr.setBody("Probando a hacer un post para ejecutar un test que debe agregar un post");
+        pr.setCategoryId(1L);
+        pr.setTags(List.of(t.getName()));
+
+        Post p = new Post();
+        p.setId(2L);
+        p.setBody(pr.getBody());
+        p.setTitle(pr.getTitle());
+        p.setCategory(c);
+        p.setUser(user);
+        p.setCreatedBy(1L);
+        p.setCreatedAt(Instant.now());
+        p.setUpdatedAt(Instant.now());
+        p.setTags(List.of(t));
+
+//        t.setPosts(List.of(p));
+//        c.setPosts(List.of(p));
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(categoryRepository.findById(1L)).thenReturn(Optional.of(c));
+        when(tagRepository.findByName("Mi tag")).thenReturn(t);
+        when(tagRepository.save(t)).thenReturn(t);
+        when(postRepository.save(p)).thenReturn(p);
+
+        PostResponse postResponse = new PostResponse();
+        postResponse.setTitle(p.getTitle());
+        postResponse.setBody(p.getTitle());
+        postResponse.setCategory(p.getCategory().getName());
+        postResponse.setTags(List.of(t.getName()));
+
+        assertEquals(postResponse, postService.addPost(pr, userPrincipal));
+
     }
 }
