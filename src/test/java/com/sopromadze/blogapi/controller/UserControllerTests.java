@@ -32,6 +32,7 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -182,12 +183,17 @@ public class UserControllerTests {
                 user.getFirstName(), user.getLastName(), user.getCreatedAt(),
                 user.getEmail(), user.getAddress(), user.getPhone(), user.getWebsite(),
                 user.getCompany(), 0L);
-        when(userService.setOrUpdateInfo(richard, infoRequest)).thenReturn(up);
+        when(userService.setOrUpdateInfo(any(), any())).thenReturn(up);
 
-        mockMvc.perform(put("/api/users/setOrUpdateInfo")
+        MvcResult result = mockMvc.perform(put("/api/users/setOrUpdateInfo")
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(infoRequest)))
-                .andExpect(status().isOk());
+                .andExpect(jsonPath("$.id", is(1)))
+                .andExpect(jsonPath("$.username", is("rick4")))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        log.info(result.getResponse().getContentAsString());
     }
 
     @Test
