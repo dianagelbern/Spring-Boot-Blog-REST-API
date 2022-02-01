@@ -3,21 +3,16 @@ package com.sopromadze.blogapi.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sopromadze.blogapi.SpringSecurityTestWebConfig;
 import com.sopromadze.blogapi.model.Tag;
-import com.sopromadze.blogapi.model.role.RoleName;
-import com.sopromadze.blogapi.security.UserPrincipal;
 import com.sopromadze.blogapi.service.impl.TagServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.util.List;
 
 import static org.mockito.Mockito.when;
 
@@ -60,5 +55,20 @@ public class TagControllerTests {
                 .andExpect(status().isCreated())
                 .andReturn();
 
+    }
+
+    @Test
+    void getTag_givenExistingTagId_shouldReturn200() throws Exception {
+
+        Tag tag = new Tag();
+        tag.setId(1L);
+
+        when(tagService.getTag(1L)).thenReturn(tag);
+
+        mockMvc.perform(get("/api/tags/{id}", 1L)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(tag)))
+                .andExpect(status().isOk())
+                .andReturn();
     }
 }
