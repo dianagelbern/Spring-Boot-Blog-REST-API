@@ -2,6 +2,8 @@ package com.sopromadze.blogapi.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sopromadze.blogapi.SpringSecurityTestWebConfig;
+import com.sopromadze.blogapi.model.Album;
+import com.sopromadze.blogapi.model.Comment;
 import com.sopromadze.blogapi.model.Post;
 import com.sopromadze.blogapi.model.role.RoleName;
 import com.sopromadze.blogapi.model.user.Address;
@@ -261,5 +263,65 @@ public class UserControllerTests {
         mockMvc.perform(get("/api/users/me").contentType("application/json")
                         .content(objectMapper.writeValueAsString(usuario)))
                 .andExpect(status().isUnauthorized());
+    }
+    
+    @Test
+    @WithUserDetails("admin")
+    void addUser_givenANewUser_thenReturnNewUSer()throws Exception{
+        User diana = User.builder()
+                .id(1L)
+                .firstName("Diana")
+                .lastName("González")
+                .username("Gelbern")
+                .password("fddsfslds")
+                .email("diana@gmail.com")
+                .build();
+        diana.setCreatedAt(Instant.now());
+        diana.setUpdatedAt(Instant.now());
+        when(userService.addUser(diana)).thenReturn(diana);
+
+        mockMvc.perform(post("/api/users")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(diana)))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    void addUser_givenANewUser_thenReturnNewUserAuthorized()throws Exception{
+        User diana = User.builder()
+                .id(1L)
+                .firstName("Diana")
+                .lastName("González")
+                .username("Gelbern")
+                .password("fddsfslds")
+                .email("diana@gmail.com")
+                .build();
+        diana.setCreatedAt(Instant.now());
+        diana.setUpdatedAt(Instant.now());
+        when(userService.addUser(diana)).thenReturn(diana);
+
+        mockMvc.perform(post("/api/users")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(diana)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithUserDetails("admin")
+    void addUser_givenANewUser_thenReturnNewUserError()throws Exception{
+        User diana = User.builder()
+                .id(1L)
+                .firstName("Diana")
+                .lastName("González")
+                .username("Gelbern")
+                .password("123456789")
+                .email("diana@gmail.com")
+                .build();
+        diana.setCreatedAt(Instant.now());
+        diana.setUpdatedAt(Instant.now());
+
+        mockMvc.perform(post("/api/users")
+                        .contentType("application/json"))
+                .andExpect(status().isBadRequest());
     }
 }
