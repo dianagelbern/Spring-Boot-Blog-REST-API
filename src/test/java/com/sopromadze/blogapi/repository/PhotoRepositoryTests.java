@@ -34,7 +34,9 @@ public class PhotoRepositoryTests {
         assertNotNull(repository);
     }
 
-    @Test
+    /*
+
+     @Test
     void findByAlbumId_givenAlbumId_ShouldShowAlbum(){
         Album album = new Album();
         album.setTitle("Portadas de Discos de Michael Jackson");
@@ -59,4 +61,5 @@ public class PhotoRepositoryTests {
 
         assertEquals(1,repository.findByAlbumId(1L,pageable).getTotalElements());
     }
+    */
 }
