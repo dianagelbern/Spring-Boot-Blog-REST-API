@@ -4,11 +4,13 @@ import com.sopromadze.blogapi.exception.BlogapiException;
 import com.sopromadze.blogapi.exception.ResourceNotFoundException;
 import com.sopromadze.blogapi.model.Comment;
 import com.sopromadze.blogapi.model.Post;
+import com.sopromadze.blogapi.model.role.RoleName;
 import com.sopromadze.blogapi.model.user.User;
+import com.sopromadze.blogapi.payload.CommentRequest;
 import com.sopromadze.blogapi.repository.CommentRepository;
 import com.sopromadze.blogapi.repository.PostRepository;
 import com.sopromadze.blogapi.repository.UserRepository;
-import org.apache.tomcat.util.file.ConfigurationSource;
+import com.sopromadze.blogapi.security.UserPrincipal;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -17,12 +19,15 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -140,4 +145,91 @@ public class CommentServiceImplTest {
 
         assertThrows(BlogapiException.class, () -> commentService.getComment(2L, 1L));
     }
+
+    @Test
+    void addComment_givenPostAndUser_shouldReturnComment(){
+
+        CommentRequest cr = new CommentRequest();
+        cr.setBody("Este es el cuerpo del PostRequest");
+
+        Post post= new Post();
+        post.setTitle("Post para agregar comentarios");
+
+        UserPrincipal ernestoPrincipal = new UserPrincipal(1L,"Ernesto","Fatuarte", "efatuarte","efatuarte@gmail.com","123456789", List.of(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString())));
+
+        User ernesto = new User("Ernesto","Fatuarte", "efatuarte","efatuarte@gmail.com","123456789");
+        ernesto.setId(1L);
+
+        Comment comment = new Comment(cr.getBody());
+        comment.setUser(ernesto);
+        comment.setPost(post);
+        comment.setName("Primer Comentario");
+        comment.setEmail("efatuarte@gmail.com");
+
+        when(postRepository.findById(any())).thenReturn(Optional.of(post));
+        when(userRepository.getUser(any())).thenReturn(ernesto);
+        when(commentRepository.save(any())).thenReturn(comment);
+
+        assertEquals(commentService.addComment(cr, any(), ernestoPrincipal).getName(), comment.getName());
+        assertEquals(commentService.addComment(cr, any(), ernestoPrincipal).getEmail(), comment.getEmail());
+        assertEquals(commentService.addComment(cr, any(), ernestoPrincipal).getUser().getUsername(), ernestoPrincipal.getUsername());
+        assertEquals(commentService.addComment(cr, any(), ernestoPrincipal).getPost().getTitle(), post.getTitle());
+    }
+
+    @Test
+    void addComment_givenPostAndNonExistingUser_shouldThrowResourceNotFoundException(){
+
+        CommentRequest cr = new CommentRequest();
+        cr.setBody("Este es el cuerpo del PostRequest");
+
+        Post post= new Post();
+        post.setTitle("Post para agregar comentarios");
+
+        UserPrincipal ernestoPrincipal = new UserPrincipal(1L,"Ernesto","Fatuarte", "efatuarteP","efatuarte@gmail.com","123456789", List.of(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString())));
+
+        User ernesto = new User("Ernesto","Fatuarte", "efatuarte","efatuarte@gmail.com","123456789");
+        ernesto.setId(1L);
+
+        Comment comment = new Comment(cr.getBody());
+        comment.setUser(ernesto);
+        comment.setPost(post);
+        comment.setName("Primer Comentario");
+        comment.setEmail("efatuarte@gmail.com");
+
+        when(postRepository.findById(anyLong())).thenReturn(Optional.empty());
+        assertThrows(ResourceNotFoundException.class,()->commentService.addComment(cr, any(), ernestoPrincipal));
+    }
+
+    @Test
+    void getCommentById_givenPostIdAndCommentId_shouldReturnComment() {
+
+        Post post = new Post();
+        post.setId(1L);
+
+        Comment comment = new Comment();
+        comment.setId(1L);
+        comment.setPost(post);
+
+        when(commentRepository.findById(1L)).thenReturn(Optional.of(comment));
+        when(postRepository.findById(1L)).thenReturn(Optional.of(post));
+        assertEquals(commentService.getComment(1L, 1L), comment);
+
+    }
+
+    @Test
+    void getCommentById_givenNonExistingPostIdOrCommentId_shouldThrowResourceNotFoundException() {
+
+        Post post = new Post();
+        post.setId(1L);
+
+        Comment comment = new Comment();
+        comment.setId(1L);
+        comment.setPost(post);
+
+        when(commentRepository.findById(1L)).thenReturn(Optional.of(comment));
+        when(postRepository.findById(1L)).thenReturn(Optional.of(post));
+        assertThrows(ResourceNotFoundException.class, () -> commentService.getComment(0L, 0L));
+
+    }
+
 }
