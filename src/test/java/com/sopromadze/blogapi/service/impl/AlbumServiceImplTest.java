@@ -1,6 +1,7 @@
 package com.sopromadze.blogapi.service.impl;
 
 import com.sopromadze.blogapi.model.Album;
+import com.sopromadze.blogapi.model.Post;
 import com.sopromadze.blogapi.model.role.RoleName;
 import com.sopromadze.blogapi.model.user.User;
 import com.sopromadze.blogapi.payload.AlbumResponse;
@@ -96,5 +97,67 @@ public class AlbumServiceImplTest {
 
         assertEquals(albumService.addAlbum(albumRequest, ernestoPrincipal), new ResponseEntity<>(album, HttpStatus.CREATED));
 
+    }
+
+    @Test
+    void getUserAlbums_givenUsername_shouldReturnAlbumPagedList(){
+
+        User user = new User();
+        user.setId(1L);
+        user.setFirstName("Ernesto");
+        user.setLastName("Fatuarte");
+        user.setUsername("efatuarte");
+        user.setEmail("efatuarte@gmail.com");
+        user.setPassword("12345");
+        user.setCreatedAt(Instant.now());
+        user.setUpdatedAt(Instant.now());
+
+        when(userRepository.getUserByName("efatuarte")).thenReturn(user);
+
+        Album album = new Album();
+        album.setTitle("Thriller");
+
+        Pageable pageable = PageRequest.of(1, 10);
+
+        Page<Album> albums = new PageImpl<Album>(List.of(album));
+
+        PagedResponse<Album> pagedList = new PagedResponse<>();
+        pagedList.setContent(albums.getContent());
+        pagedList.setTotalPages(1);
+        pagedList.setTotalElements(1);
+        pagedList.setLast(true);
+        pagedList.setSize(1);
+
+        when(albumRepository.findByCreatedBy(1L, pageable)).thenReturn(albums);
+
+        assertEquals(pagedList, albumService.getUserAlbums("efatuarte",1,1));
+    }
+
+    @Test
+    void getUserAlbums_givenNonExistingUsername_shouldThrowNullPointerException(){
+
+        User user = new User();
+        user.setId(1L);
+        user.setFirstName("Ernesto");
+        user.setLastName("Fatuarte");
+        user.setUsername("efatuarte");
+        user.setEmail("efatuarte@gmail.com");
+        user.setPassword("12345");
+        user.setCreatedAt(Instant.now());
+        user.setUpdatedAt(Instant.now());
+
+        when(userRepository.getUserByName("efatuarte")).thenReturn(user);
+
+        Album album = new Album();
+        album.setId(1L);
+        album.setTitle("Thriller");
+
+        PageImpl<Album> albums = new PageImpl<>(List.of(album));
+
+        Pageable pageable = PageRequest.of(1, 10);
+
+        when(albumRepository.findByCreatedBy(1L,pageable)).thenReturn(albums);
+
+        assertThrows(NullPointerException.class , () -> albumService.getUserAlbums("rick429",1,10));
     }
 }
