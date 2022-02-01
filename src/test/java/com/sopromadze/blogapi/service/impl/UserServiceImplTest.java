@@ -4,7 +4,6 @@ import com.sopromadze.blogapi.exception.AccessDeniedException;
 import com.sopromadze.blogapi.exception.AppException;
 import com.sopromadze.blogapi.exception.BadRequestException;
 import com.sopromadze.blogapi.exception.ResourceNotFoundException;
-import com.sopromadze.blogapi.model.Category;
 import com.sopromadze.blogapi.model.Post;
 import com.sopromadze.blogapi.model.role.Role;
 import com.sopromadze.blogapi.model.role.RoleName;
@@ -12,33 +11,24 @@ import com.sopromadze.blogapi.model.user.Address;
 import com.sopromadze.blogapi.model.user.Company;
 import com.sopromadze.blogapi.model.user.Geo;
 import com.sopromadze.blogapi.model.user.User;
-import com.sopromadze.blogapi.payload.ApiResponse;
-import com.sopromadze.blogapi.payload.InfoRequest;
-import com.sopromadze.blogapi.payload.UserIdentityAvailability;
-import com.sopromadze.blogapi.payload.UserProfile;
+import com.sopromadze.blogapi.payload.*;
 import com.sopromadze.blogapi.repository.PostRepository;
 import com.sopromadze.blogapi.repository.RoleRepository;
 import com.sopromadze.blogapi.repository.UserRepository;
 
 import com.sopromadze.blogapi.security.UserPrincipal;
-import com.sopromadze.blogapi.service.UserService;
 import lombok.extern.java.Log;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.test.context.support.WithUserDetails;
 
 
 import java.time.Instant;
@@ -409,5 +399,60 @@ class UserServiceImplTest {
 
         assertThrows(AppException.class, () -> userService.giveAdmin(u1.getUsername()));
 
+    }
+
+    @Test
+    void givenACurrentUser_thenReturnUserSummary(){
+        UserPrincipal userPrincipal = UserPrincipal.builder().id(1L).username("Gelbern").firstName("Diana").lastName("González").build();
+        UserSummary user = new UserSummary(1L, "Gelbern", "Diana", "González");
+        assertEquals(user, userService.getCurrentUser(userPrincipal));
+    }
+
+    @Test
+    void givenAUserToUpdate_thenUpdateUser(){
+        User diana = User.builder()
+                .id(1L)
+                .firstName("Diana")
+                .lastName("González")
+                .username("Gelbern")
+                .password("123456789")
+                .phone("293040586")
+                .email("diana@gmail.com")
+                .build();
+
+        diana.setCreatedAt(Instant.now());
+        diana.setUpdatedAt(Instant.now());
+        UserPrincipal userPrincipal = UserPrincipal.builder().id(1L).username("Gelbern").firstName("Diana").lastName("González").build();
+
+        when(userRepository.getUserByName(diana.getUsername())).thenReturn(diana);
+        when(userRepository.save(diana)).thenReturn(diana);
+        assertEquals(diana, userService.updateUser(diana, diana.getUsername(), userPrincipal));
+    }
+
+    @Test
+    void givenAnAdminRemove_thenReturnUser(){
+        User diana = User.builder()
+                .id(1L)
+                .firstName("Diana")
+                .lastName("González")
+                .username("Gelbern")
+                .password("123456789")
+                .phone("293040586")
+                .email("diana@gmail.com")
+                .build();
+
+        diana.setCreatedAt(Instant.now());
+        diana.setUpdatedAt(Instant.now());
+        Role rol = new Role(RoleName.ROLE_USER);
+        diana.setRoles(List.of(rol));
+
+        when(userRepository.getUserByName(diana.getUsername())).thenReturn(diana);
+
+        when(roleRepository.findByName(RoleName.ROLE_USER)).thenReturn(Optional.of(new Role(RoleName.ROLE_USER)));
+        diana.setRoles(List.of(new Role(RoleName.ROLE_USER)));
+        when(userRepository.save(diana)).thenReturn(diana);
+
+        ApiResponse apiResponse = new ApiResponse(Boolean.TRUE, "You took ADMIN role from user: " + diana.getUsername());
+        assertEquals(apiResponse, userService.removeAdmin(diana.getUsername()));
     }
 }
