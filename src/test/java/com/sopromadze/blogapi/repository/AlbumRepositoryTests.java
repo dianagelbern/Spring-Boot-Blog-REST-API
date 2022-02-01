@@ -33,16 +33,16 @@ public class AlbumRepositoryTests {
         u1.setPassword("12345");
         u1.setCreatedAt(Instant.now());
         u1.setUpdatedAt(Instant.now());
-
+        testEntityManager.persist(u1);
 
         Album a1 = new Album();
         a1.setUser(u1);
         a1.setTitle("album 1");
         a1.setCreatedAt(Instant.now());
         a1.setUpdatedAt(Instant.now());
-        a1.setCreatedBy(1L);
+        a1.setCreatedBy(u1.getId());
 
-        testEntityManager.persist(u1);
+
         testEntityManager.persist(a1);
         testEntityManager.flush();
 
