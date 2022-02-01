@@ -25,6 +25,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
@@ -221,5 +222,44 @@ public class UserControllerTests {
         MvcResult result = mockMvc.perform(delete("/api/users/{username}/", "efatuarte"))
                 .andExpect(status().isOk())
                 .andReturn();
+    }
+
+    @Test
+    @WithUserDetails("user")
+    void getCurrentUser_givenAuthorizedUser_thenReturnSucces() throws Exception{
+        User diana = User.builder()
+                .id(1L)
+                .firstName("Diana")
+                .lastName("González")
+                .username("Gelbern")
+                .password("123456789")
+                .email("diana@gmail.com")
+                .build();
+        diana.setCreatedAt(Instant.now());
+        diana.setUpdatedAt(Instant.now());
+        UserPrincipal usuario = UserPrincipal.builder().username(diana.getUsername()).authorities(Arrays.asList(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))).username(diana.getUsername()).password("1234567").build();
+
+        mockMvc.perform(get("/api/users/me").contentType("application/json")
+                        .content(objectMapper.writeValueAsString(usuario)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void getCurrentUser_givenUnauthorizedUser_thenReturnUnathorized() throws Exception{
+        User diana = User.builder()
+                .id(1L)
+                .firstName("Diana")
+                .lastName("González")
+                .username("Gelbern")
+                .password("123456789")
+                .email("diana@gmail.com")
+                .build();
+        diana.setCreatedAt(Instant.now());
+        diana.setUpdatedAt(Instant.now());
+        UserPrincipal usuario = UserPrincipal.builder().username(diana.getUsername()).username(diana.getUsername()).password("1234567").build();
+
+        mockMvc.perform(get("/api/users/me").contentType("application/json")
+                        .content(objectMapper.writeValueAsString(usuario)))
+                .andExpect(status().isUnauthorized());
     }
 }
