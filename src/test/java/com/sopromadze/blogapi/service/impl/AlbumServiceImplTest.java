@@ -10,6 +10,7 @@ import com.sopromadze.blogapi.payload.request.AlbumRequest;
 import com.sopromadze.blogapi.repository.AlbumRepository;
 import com.sopromadze.blogapi.repository.UserRepository;
 import com.sopromadze.blogapi.security.UserPrincipal;
+import lombok.extern.java.Log;
 import org.hibernate.engine.spi.Status;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,14 +20,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.modelmapper.ModelMapper;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
+import static com.sopromadze.blogapi.utils.AppConstants.CREATED_AT;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 
@@ -36,6 +35,7 @@ import java.util.List;
 
 import static org.mockito.Mockito.when;
 
+@Log
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 public class AlbumServiceImplTest {
@@ -115,11 +115,15 @@ public class AlbumServiceImplTest {
         when(userRepository.getUserByName("efatuarte")).thenReturn(user);
 
         Album album = new Album();
+        album.setId(2L);
         album.setTitle("Thriller");
+        album.setUser(user);
+        album.setCreatedBy(user.getId());
 
-        Pageable pageable = PageRequest.of(1, 10);
+        Pageable pageable = PageRequest.of(0, 1, Sort.Direction.DESC, CREATED_AT);
 
         Page<Album> albums = new PageImpl<Album>(List.of(album));
+        when(albumRepository.findByCreatedBy(user.getId(), pageable)).thenReturn(albums);
 
         PagedResponse<Album> pagedList = new PagedResponse<>();
         pagedList.setContent(albums.getContent());
@@ -128,9 +132,7 @@ public class AlbumServiceImplTest {
         pagedList.setLast(true);
         pagedList.setSize(1);
 
-        when(albumRepository.findByCreatedBy(1L, pageable)).thenReturn(albums);
-
-        assertEquals(pagedList, albumService.getUserAlbums("efatuarte",1,1));
+        assertEquals(pagedList, albumService.getUserAlbums("efatuarte",0,1));
     }
 
     @Test

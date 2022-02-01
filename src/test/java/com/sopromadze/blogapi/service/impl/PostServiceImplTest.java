@@ -14,6 +14,7 @@ import com.sopromadze.blogapi.repository.PostRepository;
 import com.sopromadze.blogapi.repository.TagRepository;
 import com.sopromadze.blogapi.repository.UserRepository;
 import com.sopromadze.blogapi.security.UserPrincipal;
+import lombok.extern.java.Log;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -24,6 +25,8 @@ import static org.mockito.Mockito.*;
 
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.data.domain.*;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.parameters.P;
@@ -33,7 +36,9 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Log
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class PostServiceImplTest {
 
     @Mock
@@ -157,14 +162,6 @@ class PostServiceImplTest {
 
         UserPrincipal userPrincipal = new UserPrincipal(1L, "Ernesto", "Fatuarte", "efatuarte", "efatuarte@gmail.com", "123456789", List.of(new SimpleGrantedAuthority(RoleName.ROLE_USER.toString())));
 
-        Category c = new Category();
-        c.setId(1L);
-        c.setName("cat1");
-
-        Tag t = new Tag();
-        t.setId(1L);
-        t.setName("Mi tag");
-
         User user = new User();
         user.setId(1L);
         user.setUsername("efatuarte");
@@ -175,6 +172,21 @@ class PostServiceImplTest {
         user.setCreatedAt(Instant.now());
         user.setUpdatedAt(Instant.now());
 
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        Category c = new Category();
+        c.setId(1L);
+        c.setName("cat1");
+
+        when(categoryRepository.findById(1L)).thenReturn(Optional.of(c));
+
+        Tag t = new Tag();
+        t.setId(1L);
+        t.setName("Mi tag");
+
+        when(tagRepository.findByName("Mi tag")).thenReturn(t);
+        when(tagRepository.save(t)).thenReturn(t);
+
         PostRequest pr = new PostRequest();
         pr.setTitle("Esto es un post de testeo");
         pr.setBody("Probando a hacer un post para ejecutar un test que debe agregar un post");
@@ -182,7 +194,7 @@ class PostServiceImplTest {
         pr.setTags(List.of(t.getName()));
 
         Post p = new Post();
-        p.setId(2L);
+        p.setId(1L);
         p.setBody(pr.getBody());
         p.setTitle(pr.getTitle());
         p.setCategory(c);
@@ -192,13 +204,8 @@ class PostServiceImplTest {
         p.setUpdatedAt(Instant.now());
         p.setTags(List.of(t));
 
-//        t.setPosts(List.of(p));
-//        c.setPosts(List.of(p));
+        log.info("POST: " + p);
 
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(categoryRepository.findById(1L)).thenReturn(Optional.of(c));
-        when(tagRepository.findByName("Mi tag")).thenReturn(t);
-        when(tagRepository.save(t)).thenReturn(t);
         when(postRepository.save(p)).thenReturn(p);
 
         PostResponse postResponse = new PostResponse();
