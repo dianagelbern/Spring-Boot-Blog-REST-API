@@ -47,6 +47,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 @Log
 @ExtendWith(MockitoExtension.class)
@@ -296,4 +297,117 @@ class UserServiceImplTest {
 
     }
 
+    @Test
+    void checkUsernameAvailability_givenUsername_returnTrue () {
+        User u1 = new User();
+        u1.setUsername("Richard");
+
+        when(userRepository.existsByUsername(u1.getUsername())).thenReturn(false);
+        UserIdentityAvailability u = new UserIdentityAvailability(true);
+        assertEquals(u, userService.checkUsernameAvailability(u1.getUsername()));
+    }
+
+    @Test
+    void deleteUser_givenUserName_returnApiResponse() {
+
+        UserPrincipal u = new UserPrincipal(1L, "Richard","Céspedes Pedrazas", "Richard", "richard@gmail.com", "123456", List.of(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString())));
+        User u1 = new User();
+        u1.setId(1L);
+        u1.setUsername("Richard");
+        u1.setFirstName("Richard");
+        u1.setLastName("Céspedes Pedrazas");
+        u1.setEmail("richard@gmail.com");
+        u1.setRoles(List.of(new Role(RoleName.ROLE_ADMIN)));
+        u1.setPassword("123456");
+        u1.setCreatedAt(Instant.now());
+        u1.setUpdatedAt(Instant.now());
+
+        when(userRepository.findByUsername(u1.getUsername())).thenReturn(Optional.of(u1));
+        doNothing().when(userRepository).deleteById(u1.getId());
+        ApiResponse ap = new ApiResponse(Boolean.TRUE, "You successfully deleted profile of: " + u1.getUsername());
+        assertEquals(ap, userService.deleteUser(u1.getUsername(), u));
+
+    }
+
+    @Test
+    void deleteUser_givenUserName_throwsResourceNotFoundException() {
+
+        UserPrincipal u = new UserPrincipal(1L, "Richard","Céspedes Pedrazas", "Richard", "richard@gmail.com", "123456", List.of(new SimpleGrantedAuthority(RoleName.ROLE_USER.toString())));
+        User u1 = new User();
+        u1.setId(1L);
+        u1.setUsername("Richard");
+        u1.setFirstName("Richard");
+        u1.setLastName("Céspedes Pedrazas");
+        u1.setEmail("richard@gmail.com");
+        u1.setRoles(List.of(new Role(RoleName.ROLE_USER)));
+        u1.setPassword("123456");
+        u1.setCreatedAt(Instant.now());
+        u1.setUpdatedAt(Instant.now());
+
+        when(userRepository.findByUsername("Pedro")).thenThrow(new ResourceNotFoundException("User", "id", "Pedro"));
+
+        assertThrows(ResourceNotFoundException.class, () -> userService.deleteUser("Pedro", u));
+    }
+
+    @Test
+    void deleteUser_givenUserName_throwsAccessDeniedException() {
+
+        UserPrincipal u = new UserPrincipal(2L, "Richard","Céspedes Pedrazas", "Richard", "richard@gmail.com", "123456", List.of(new SimpleGrantedAuthority(RoleName.ROLE_USER.toString())));
+        User u1 = new User();
+        u1.setId(1L);
+        u1.setUsername("Richard");
+        u1.setFirstName("Richard");
+        u1.setLastName("Céspedes Pedrazas");
+        u1.setEmail("richard@gmail.com");
+        u1.setRoles(List.of(new Role(RoleName.ROLE_USER)));
+        u1.setPassword("123456");
+        u1.setCreatedAt(Instant.now());
+        u1.setUpdatedAt(Instant.now());
+
+        when(userRepository.findByUsername(u1.getUsername())).thenReturn(Optional.of(u1));
+
+        assertThrows(AccessDeniedException.class, () -> userService.deleteUser(u1.getUsername(), u));
+    }
+
+    @Test
+    void givenAdmin_givenUserName_ShouldShowSuccess() {
+        User u1 = new User();
+        u1.setId(1L);
+        u1.setUsername("Richard");
+        u1.setFirstName("Richard");
+        u1.setLastName("Céspedes Pedrazas");
+        u1.setEmail("richard@gmail.com");
+        u1.setPassword("123456");
+        u1.setCreatedAt(Instant.now());
+        u1.setUpdatedAt(Instant.now());
+
+        when(userRepository.getUserByName(u1.getUsername())).thenReturn(u1);
+        when(roleRepository.findByName(RoleName.ROLE_ADMIN)).thenReturn(Optional.of(new Role(RoleName.ROLE_ADMIN)));
+        when(roleRepository.findByName(RoleName.ROLE_USER)).thenReturn(Optional.of(new Role(RoleName.ROLE_USER)));
+
+        u1.setRoles(List.of(new Role(RoleName.ROLE_ADMIN),new Role(RoleName.ROLE_USER)));
+        when(userRepository.save(u1)).thenReturn(u1);
+        ApiResponse ap = new ApiResponse(Boolean.TRUE, "You gave ADMIN role to user: " + u1.getUsername());
+
+        assertEquals(ap, userService.giveAdmin(u1.getUsername()));
+    }
+
+    @Test
+    void givenAdmin_givenUserName_throwAppException () {
+        User u1 = new User();
+        u1.setId(1L);
+        u1.setUsername("Richard");
+        u1.setFirstName("Richard");
+        u1.setLastName("Céspedes Pedrazas");
+        u1.setEmail("richard@gmail.com");
+        u1.setPassword("123456");
+        u1.setCreatedAt(Instant.now());
+        u1.setUpdatedAt(Instant.now());
+
+        when(userRepository.getUserByName(u1.getUsername())).thenReturn(u1);
+        when(roleRepository.findByName(any())).thenThrow(new AppException("User role not set"));
+
+        assertThrows(AppException.class, () -> userService.giveAdmin(u1.getUsername()));
+
+    }
 }
