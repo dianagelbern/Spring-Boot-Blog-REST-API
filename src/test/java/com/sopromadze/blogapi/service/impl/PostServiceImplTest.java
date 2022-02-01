@@ -5,6 +5,7 @@ import com.sopromadze.blogapi.model.Category;
 import com.sopromadze.blogapi.model.Post;
 import com.sopromadze.blogapi.model.Tag;
 import com.sopromadze.blogapi.model.role.RoleName;
+import com.sopromadze.blogapi.model.user.User;
 import com.sopromadze.blogapi.payload.PagedResponse;
 import com.sopromadze.blogapi.payload.PostRequest;
 import com.sopromadze.blogapi.repository.CategoryRepository;
@@ -26,6 +27,7 @@ import org.springframework.data.domain.*;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.parameters.P;
 
+import java.time.Instant;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -126,6 +128,16 @@ class PostServiceImplTest {
         c.setId(1L);
         c.setName("cat1");
 
+        User user = new User();
+        user.setId(1L);
+        user.setUsername("efatuarte");
+        user.setFirstName("Ernesto");
+        user.setLastName("Fatuarte");
+        user.setEmail("efatuarte@gmail.com");
+        user.setPassword("12345");
+        user.setCreatedAt(Instant.now());
+        user.setUpdatedAt(Instant.now());
+
         PostRequest pr = new PostRequest();
         pr.setTitle("Esto es un post de testeo");
         pr.setBody("Probando a hacer un post para ejecutar un test que debe lanzar una excepcion");
@@ -133,7 +145,9 @@ class PostServiceImplTest {
 
         UserPrincipal up = new UserPrincipal(1L, "Nombre1", "Apellido1", "admin", "admin@gmail.com", "admin", List.of(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString())));
 
-        when(categoryRepository.findById(0L)).thenThrow(new ResourceNotFoundException("a", "b", 0L));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        when(categoryRepository.findById(1L)).thenThrow(new ResourceNotFoundException("a", "b", 1L));
         assertThrows(ResourceNotFoundException.class, () -> postService.addPost(pr, up));
     }
 

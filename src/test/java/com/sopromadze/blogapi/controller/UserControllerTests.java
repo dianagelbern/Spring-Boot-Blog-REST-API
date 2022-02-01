@@ -24,15 +24,13 @@ import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-
 import java.time.Instant;
 import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
@@ -187,5 +185,41 @@ public class UserControllerTests {
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(infoRequest)))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void deleteUser_givenNonAuthorizedUser_shouldReturn401() throws Exception {
+        User user = User.builder()
+                .id(1L)
+                .firstName("Ernesto")
+                .lastName("Fatuarte")
+                .username("efatuarte")
+                .password("123456789")
+                .email("ernesto.fatuarte@gmail.com")
+                .phone("666666666")
+                .build();
+
+        MvcResult result = mockMvc.perform(delete("/api/users/{username}/", "efatuarte"))
+                .andExpect(status().isUnauthorized())
+                .andReturn();
+    }
+
+    @Test
+    @WithUserDetails("admin")
+    void deleteUser_givenAuthorizedUser_shouldReturn204() throws Exception {
+
+        User user = User.builder()
+                .id(1L)
+                .firstName("Ernesto")
+                .lastName("Fatuarte")
+                .username("efatuarte")
+                .password("123456789")
+                .email("ernesto.fatuarte@gmail.com")
+                .phone("666666666")
+                .build();
+
+        MvcResult result = mockMvc.perform(delete("/api/users/{username}/", "efatuarte"))
+                .andExpect(status().isOk())
+                .andReturn();
     }
 }
