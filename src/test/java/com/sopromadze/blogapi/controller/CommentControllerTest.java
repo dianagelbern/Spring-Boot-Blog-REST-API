@@ -46,11 +46,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = {SpringSecurityTestWebConfig.class})
 @AutoConfigureMockMvc
 @Log
@@ -64,9 +59,6 @@ class CommentControllerTest {
 
     @MockBean
     CommentService commentService;
-
-    @MockBean
-    AuthenticationManager authenticationManager;
 
     @Test
     void givenPostId_thenReturnAllComments() throws Exception {
@@ -277,7 +269,7 @@ class CommentControllerTest {
                 .andExpect(status().isUnauthorized());
     }
 
-    /*
+
     @Test
     @WithMockUser(roles = "USER")
     void deleteCommentSucces()throws Exception{
@@ -297,14 +289,12 @@ class CommentControllerTest {
         UserPrincipal usuario = UserPrincipal.builder().username(diana.getUsername()).authorities(Arrays.asList(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))).username(diana.getUsername()).password("1234567").build();
         Comment comment = Comment.builder().id(1L).name("Esto es el nombre").body("Cuerpo de un comentario").post(post).build();
         ApiResponse apiResponse = new ApiResponse(true, "Success", HttpStatus.OK);
-        Mockito.when(commentService.deleteComment(post.getId(), comment.getId(), usuario)).thenReturn(apiResponse);
+        Mockito.when(commentService.deleteComment(Mockito.anyLong(), Mockito.anyLong(), Mockito.any())).thenReturn(apiResponse);
         mockMvc.perform(delete("/api/posts/{postId}/comments/{id}", post.getId(), comment.getId())
                         .with(SecurityMockMvcRequestPostProcessors.user(usuario.getUsername()).roles("USER"))
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(apiResponse.getSuccess())))
                 .andExpect(status().isOk());
     }
-     */
-
 
 }

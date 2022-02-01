@@ -241,7 +241,8 @@ public class UserControllerTests {
         diana.setUpdatedAt(Instant.now());
         UserPrincipal usuario = UserPrincipal.builder().username(diana.getUsername()).authorities(Arrays.asList(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))).username(diana.getUsername()).password("1234567").build();
 
-        mockMvc.perform(get("/api/users/me").contentType("application/json")
+        mockMvc.perform(get("/api/users/me")
+                        .contentType("application/json")
                         .content(objectMapper.writeValueAsString(usuario)))
                 .andExpect(status().isOk());
     }
@@ -260,7 +261,8 @@ public class UserControllerTests {
         diana.setUpdatedAt(Instant.now());
         UserPrincipal usuario = UserPrincipal.builder().username(diana.getUsername()).username(diana.getUsername()).password("1234567").build();
 
-        mockMvc.perform(get("/api/users/me").contentType("application/json")
+        mockMvc.perform(get("/api/users/me")
+                        .contentType("application/json")
                         .content(objectMapper.writeValueAsString(usuario)))
                 .andExpect(status().isUnauthorized());
     }
@@ -309,19 +311,11 @@ public class UserControllerTests {
     @Test
     @WithUserDetails("admin")
     void addUser_givenANewUser_thenReturnNewUserError()throws Exception{
-        User diana = User.builder()
-                .id(1L)
-                .firstName("Diana")
-                .lastName("González")
-                .username("Gelbern")
-                .password("123456789")
-                .email("diana@gmail.com")
-                .build();
-        diana.setCreatedAt(Instant.now());
-        diana.setUpdatedAt(Instant.now());
+        User otro = new User();
 
         mockMvc.perform(post("/api/users")
-                        .contentType("application/json"))
+                        .contentType("application/json")
+                .content(objectMapper.writeValueAsString(otro)))
                 .andExpect(status().isBadRequest());
     }
 }
