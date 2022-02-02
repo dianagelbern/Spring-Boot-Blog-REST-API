@@ -14,10 +14,11 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.List;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import static org.mockito.Mockito.when;
 
@@ -64,5 +65,20 @@ public class TagControllerTests {
                 .andExpect(status().isCreated())
                 .andReturn();
 
+    }
+
+    @Test
+    void getTag_givenExistingTagId_shouldReturn200() throws Exception {
+
+        Tag tag = new Tag();
+        tag.setId(1L);
+
+        when(tagService.getTag(1L)).thenReturn(tag);
+
+        mockMvc.perform(get("/api/tags/{id}", 1L)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(tag)))
+                .andExpect(status().isOk())
+                .andReturn();
     }
 }

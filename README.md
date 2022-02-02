@@ -1,6 +1,18 @@
+# Trabajo cooperativo Grupo 7
+
 [![Build Status](https://travis-ci.com/coma123/Spring-Boot-Blog-REST-API.svg?branch=development)](https://travis-ci.com/coma123/Spring-Boot-Blog-REST-API) [![Sonarcloud Status](https://sonarcloud.io/api/project_badges/measure?project=coma123_Spring-Boot-Blog-REST-API&metric=alert_status)](https://sonarcloud.io/dashboard?id=coma123_Spring-Boot-Blog-REST-API) [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/3706/badge)](https://bestpractices.coreinfrastructure.org/projects/3706)
 
 Este proyecto es un fork de [https://github.com/osopromadze/Spring-Boot-Blog-REST-API](https://github.com/osopromadze/Spring-Boot-Blog-REST-API) realizado para fines didácticos sobre el testeo de aplicaciones Spring Boot. Desde aquí mi agradecimiento al autor del mismo.
+
+## Componentes
+
+Este proyecto ha sido realizado por el Grupo 7, cuyos componentes son:
+
+| Alumno | Puesto |
+| ------ | ------ |
+| Diana Atziry González Suárez | Coordinadora y Scrum Máster |
+| Richard Céspedes Pedrazas | Secretario |
+| Ernesto Fatuarte Fernández | Mantenimiento |
 
 Se incluyen algunas pequeñas modificaciones sobre cómo lanzar el proyecto desde Docker.
 
@@ -9,8 +21,8 @@ Se incluyen algunas pequeñas modificaciones sobre cómo lanzar el proyecto desd
 Al activar este perfil, la aplicación tratará de conectarse a una base de datos Mysql local. Esta puede ser desplegada con el fichero `docker-compose.dev.yml`.
 
 ```bash
-docker-compose -f docker-compose.dev.yml up -d
-mvn spring-boot:run -Dspring-boot.run.profiles=dev
+docker compose -f .\docker-compose.dev.yml up -d
+mvn spring-boot:run -D "spring-boot.run.profiles=dev"
 ```
 
 Una vez lanzada la base de datos, si solamente se quieren ejecutar los test, se puede ejecutar el siguiente comando:
