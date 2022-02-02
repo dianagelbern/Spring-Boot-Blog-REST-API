@@ -34,8 +34,6 @@ public class PhotoRepositoryTests {
         assertNotNull(repository);
     }
 
-    /*
-
      @Test
     void findByAlbumId_givenAlbumId_ShouldShowAlbum(){
         Album album = new Album();
@@ -53,13 +51,10 @@ public class PhotoRepositoryTests {
         photo.setUpdatedAt(Instant.now());
         photo.setAlbum(album);
 
-        //album.setPhoto(List.of(photo));
-
         entityManager.persist(photo);
 
         Pageable pageable = PageRequest.of(0,1);
 
         assertEquals(1, repository.findByAlbumId(1L, pageable).getTotalElements());
     }
-    */
 }
